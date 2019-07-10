@@ -46,13 +46,11 @@ public abstract class AbstractReactiveQueryExecutor extends AbstractQueryExecuto
 
     protected void log(Query query){
         if(logger.isDebugEnabled()){
-            logger.debug("Executing {}", query.getSQL(ParamType.INLINED));
+            logger.debug("Executing SQL {}", query.getSQL(ParamType.INLINED));
         }
     }
 
-
     protected String toPreparedQuery(Query query){
-        String namedQuery = query.getSQL(ParamType.INDEXED);
-        return namedQuery.replaceAll(pattern, "\\$");
+        return query.getSQL(ParamType.INDEXED);
     }
 }

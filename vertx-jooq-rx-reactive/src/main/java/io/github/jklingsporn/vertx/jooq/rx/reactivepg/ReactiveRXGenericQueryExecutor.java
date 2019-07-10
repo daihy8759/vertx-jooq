@@ -13,6 +13,7 @@ import io.vertx.reactivex.sqlclient.Row;
 import io.vertx.reactivex.sqlclient.*;
 import io.vertx.sqlclient.Transaction;
 import org.jooq.*;
+import org.jooq.conf.ParamType;
 import org.jooq.exception.TooManyRowsException;
 
 import java.util.ArrayList;
@@ -47,15 +48,16 @@ public class ReactiveRXGenericQueryExecutor extends AbstractReactiveQueryExecuto
                         .collect(Collectors.toList()));
     }
 
-    protected Single<SqlConnection> getConnection(){
+    protected Single<SqlConnection> getConnection() {
         return delegate.rxGetConnection();
     }
 
-    protected <U> io.reactivex.functions.Function<io.vertx.reactivex.ext.sql.SQLConnection,Single<? extends U>> safeExecute(io.reactivex.functions.Function<io.vertx.reactivex.ext.sql.SQLConnection,Single<? extends U>> action){
+    protected <U> io.reactivex.functions.Function<io.vertx.reactivex.ext.sql.SQLConnection,
+            Single<? extends U>> safeExecute(io.reactivex.functions.Function<io.vertx.reactivex.ext.sql.SQLConnection, Single<? extends U>> action) {
         return sqlConnection -> {
-            try{
+            try {
                 return action.apply(sqlConnection);
-            }catch(Throwable e){
+            } catch (Throwable e) {
                 sqlConnection.close();
                 return Single.error(e);
             }
@@ -92,8 +94,10 @@ public class ReactiveRXGenericQueryExecutor extends AbstractReactiveQueryExecuto
     protected Tuple rxGetBindValues(Query query) {
         ArrayList<Object> bindValues = new ArrayList<>();
         for (Param<?> param : query.getParams().values()) {
-            Object value = convertToDatabaseType(param);
-            bindValues.add(value);
+            if (ParamType.INDEXED.equals(param.getParamType())) {
+                Object value = convertToDatabaseType(param);
+                bindValues.add(value);
+            }
         }
         Tuple tuple = Tuple.tuple();
         bindValues.forEach(tuple::addValue);
