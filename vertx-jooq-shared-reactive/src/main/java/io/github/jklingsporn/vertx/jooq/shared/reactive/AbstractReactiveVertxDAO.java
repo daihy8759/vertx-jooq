@@ -2,8 +2,9 @@ package io.github.jklingsporn.vertx.jooq.shared.reactive;
 
 import io.github.jklingsporn.vertx.jooq.shared.internal.AbstractVertxDAO;
 import io.github.jklingsporn.vertx.jooq.shared.internal.QueryExecutor;
-import io.vertx.core.impl.Arguments;
-import org.jooq.*;
+import org.jooq.Table;
+import org.jooq.TableField;
+import org.jooq.UpdatableRecord;
 
 import java.util.function.Function;
 
@@ -21,14 +22,13 @@ public abstract class AbstractReactiveVertxDAO<R extends UpdatableRecord<R>, P, 
 
     protected AbstractReactiveVertxDAO(Table<R> table, Class<P> type, QueryExecutor<R, T, FIND_MANY, FIND_ONE, EXECUTE, INSERT_RETURNING> queryExecutor) {
         super(table, type, queryExecutor);
-        Arguments.require(SQLDialect.POSTGRES.equals(queryExecutor.configuration().dialect().family()),"Only Postgres supported");
     }
 
     @Override
     @SuppressWarnings("unchecked")
     protected Function<Object,T> keyConverter(){
         return o -> {
-            io.reactiverse.pgclient.Row row = (io.reactiverse.pgclient.Row) o;
+            io.vertx.sqlclient.Row row = (io.vertx.sqlclient.Row) o;
             TableField<R, ?>[] fields = getTable().getPrimaryKey().getFieldsArray();
             if(fields.length == 1){
                 return (T)row.getValue(fields[0].getName());

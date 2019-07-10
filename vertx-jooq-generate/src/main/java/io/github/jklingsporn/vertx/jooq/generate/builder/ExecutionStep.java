@@ -7,20 +7,9 @@ package io.github.jklingsporn.vertx.jooq.generate.builder;
 public interface ExecutionStep {
 
     /**
-     * @return A {@code DIStep} using JDBC for query execution.
-     */
-    public DIStep withJDBCDriver();
-
-    /**
-     * @return A {@code DIStep} using an async driver for query execution (only MySQL and Postgres supported).
-     * @see <a href="https://github.com/mauricio/postgresql-async">postgresql-async @ GitHub</a>
-     */
-    public DIStep withAsyncDriver();
-
-    /**
      * @return A {@code DIStep} using a reactive driver for query execution. Only Postgres supported.
      * @see <a href="https://github.com/vietj/reactive-pg-client">reactive-pg-client @ GitHub</a>
      */
-    public DIStep withPostgresReactiveDriver();
+    DIStep withReactiveDriver();
 
 }

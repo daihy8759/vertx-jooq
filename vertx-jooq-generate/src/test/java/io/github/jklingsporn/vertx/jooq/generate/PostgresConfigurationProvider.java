@@ -22,7 +22,7 @@ public class PostgresConfigurationProvider extends AbstractDatabaseConfiguration
     @Override
     public void setupDatabase() throws Exception {
         try
-            (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/postgres", Credentials.POSTGRES.getUser(), Credentials.POSTGRES.getPassword())) {
+            (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/vertx-jooq", Credentials.POSTGRES.getUser(), Credentials.POSTGRES.getPassword())) {
             connection.prepareStatement("DROP SCHEMA IF EXISTS vertx CASCADE;").execute();
             connection.prepareStatement("CREATE SCHEMA vertx;").execute();
             connection.prepareStatement("SET SCHEMA 'vertx';").execute();
@@ -56,7 +56,7 @@ public class PostgresConfigurationProvider extends AbstractDatabaseConfiguration
     public Configuration createGeneratorConfig(String generatorName, String packageName, Class<? extends VertxGeneratorStrategy> generatorStrategy){
         Jdbc jdbcConfig = new Jdbc();
         jdbcConfig.setDriver("org.postgresql.Driver");
-        jdbcConfig.setUrl("jdbc:postgresql://127.0.0.1:5432/postgres");
+        jdbcConfig.setUrl("jdbc:postgresql://127.0.0.1:5432/vertx-jooq");
         jdbcConfig.setUser(Credentials.POSTGRES.getUser());
         jdbcConfig.setPassword(Credentials.POSTGRES.getPassword());
         return createGeneratorConfig(generatorName, packageName, generatorStrategy, jdbcConfig, PostgresDatabase.class.getName());

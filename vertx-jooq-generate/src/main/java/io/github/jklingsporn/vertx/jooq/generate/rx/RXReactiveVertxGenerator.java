@@ -9,6 +9,6 @@ import io.github.jklingsporn.vertx.jooq.generate.builder.VertxGeneratorBuilder;
 public class RXReactiveVertxGenerator extends DelegatingVertxGenerator {
 
     public RXReactiveVertxGenerator() {
-        super(VertxGeneratorBuilder.init().withRXAPI().withPostgresReactiveDriver().build());
+        super(VertxGeneratorBuilder.init().withRXAPI().withReactiveDriver().build());
     }
 }

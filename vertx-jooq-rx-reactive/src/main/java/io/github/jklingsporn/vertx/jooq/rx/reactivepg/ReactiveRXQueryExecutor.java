@@ -1,10 +1,10 @@
 package io.github.jklingsporn.vertx.jooq.rx.reactivepg;
 
 import io.github.jklingsporn.vertx.jooq.shared.internal.QueryExecutor;
-import io.reactiverse.reactivex.pgclient.PgClient;
-import io.reactiverse.reactivex.pgclient.PgRowSet;
-import io.reactiverse.reactivex.pgclient.PgTransaction;
 import io.reactivex.Single;
+import io.vertx.reactivex.sqlclient.Pool;
+import io.vertx.reactivex.sqlclient.Row;
+import io.vertx.reactivex.sqlclient.RowSet;
 import org.jooq.*;
 import org.jooq.impl.DefaultConfiguration;
 
@@ -16,16 +16,19 @@ import java.util.stream.Collectors;
 /**
  * Created by jensklingsporn on 01.03.18.
  */
-public class ReactiveRXQueryExecutor<R extends UpdatableRecord<R>,P,T> extends ReactiveRXGenericQueryExecutor implements QueryExecutor<R,T,Single<List<P>>,Single<Optional<P>>,Single<Integer>,Single<T>>{
+public class ReactiveRXQueryExecutor<R extends UpdatableRecord<R>, P, T> extends
+        ReactiveRXGenericQueryExecutor implements QueryExecutor<R, T, Single<List<P>>,
+        Single<Optional<P>>, Single<Integer>, Single<T>> {
 
-    private final Function<io.reactiverse.pgclient.Row,P> pojoMapper;
+    private final Function<Row, P> pojoMapper;
 
-    public ReactiveRXQueryExecutor(PgClient delegate, Function<io.reactiverse.pgclient.Row, P> pojoMapper) {
-        this(new DefaultConfiguration().set(SQLDialect.POSTGRES),delegate,pojoMapper);
+    public ReactiveRXQueryExecutor(Pool delegate, Function<Row, P> pojoMapper) {
+        this(new DefaultConfiguration().set(SQLDialect.POSTGRES), delegate, pojoMapper);
     }
 
-    public ReactiveRXQueryExecutor(Configuration configuration, PgClient delegate, Function<io.reactiverse.pgclient.Row, P> pojoMapper) {
-        super(configuration,delegate);
+    public ReactiveRXQueryExecutor(Configuration configuration, Pool delegate,
+                                   Function<Row, P> pojoMapper) {
+        super(configuration, delegate);
         this.pojoMapper = pojoMapper;
     }
 
@@ -40,24 +43,25 @@ public class ReactiveRXQueryExecutor<R extends UpdatableRecord<R>,P,T> extends R
     }
 
     @Override
-    public Single<T> insertReturning(Function<DSLContext, ? extends InsertResultStep<R>> queryFunction, Function<Object, T> keyMapper) {
+    public Single<T> insertReturning(Function<DSLContext, ? extends InsertResultStep<R>> queryFunction,
+                                     Function<Object, T> keyMapper) {
         InsertResultStep<R> query = createQuery(queryFunction);
         log(query);
-        Single<PgRowSet> rowFuture = delegate.rxPreparedQuery(toPreparedQuery(query), rxGetBindValues(query));
-        return rowFuture
-                .map(rows -> rows.getDelegate().iterator().next())
+        Single<RowSet> rowSingle = delegate.rxPreparedQuery(toPreparedQuery(query), rxGetBindValues(query));
+        return rowSingle
+                .map(rows -> rows.iterator().next())
                 .map(keyMapper::apply);
     }
 
 
-    @Override
-    protected io.reactivex.functions.Function<PgTransaction, ? extends ReactiveRXGenericQueryExecutor> newInstance() {
-        return transaction-> new ReactiveRXQueryExecutor<R,P,T>(configuration(),transaction,pojoMapper);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public Single<ReactiveRXQueryExecutor<R,P,T>> beginTransaction() {
-        return (Single<ReactiveRXQueryExecutor<R,P,T>>) super.beginTransaction();
-    }
+//    @Override
+//    protected io.reactivex.functions.Function<Transaction, ? extends ReactiveRXGenericQueryExecutor> newInstance() {
+//        return transaction-> new ReactiveRXQueryExecutor<R,P,T>(configuration(),transaction,pojoMapper);
+//    }
+//
+//    @Override
+//    @SuppressWarnings("unchecked")
+//    public Single<ReactiveRXQueryExecutor<R,P,T>> beginTransaction() {
+//        return (Single<ReactiveRXQueryExecutor<R,P,T>>) super.beginTransaction();
+//    }
 }

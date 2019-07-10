@@ -12,7 +12,8 @@ public class GeneratorTest extends AbstractVertxGeneratorTest{
 
 
     public GeneratorTest() {
-        super(RXReactiveVertxGenerator.class, VertxGeneratorStrategy.class,"rx.reactive.regular", PostgresConfigurationProvider.getInstance());
+        super(RXReactiveVertxGenerator.class, VertxGeneratorStrategy.class,"rx.reactive.regular",
+                PostgresConfigurationProvider.getInstance());
     }
 
 }

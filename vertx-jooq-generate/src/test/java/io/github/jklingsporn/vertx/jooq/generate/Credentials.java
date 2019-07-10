@@ -6,7 +6,7 @@ package io.github.jklingsporn.vertx.jooq.generate;
 public enum Credentials {
 
     HSQLDB("test", ""),
-    POSTGRES("vertx", "password"),
+    POSTGRES("postgres", "postgres"),
     MYSQL("root", "vertx");
 
     private final String user;

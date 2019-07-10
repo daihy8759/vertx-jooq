@@ -1,10 +1,10 @@
 package io.github.jklingsporn.vertx.jooq.shared.reactive;
 
 import io.github.jklingsporn.vertx.jooq.shared.internal.AbstractQueryExecutor;
-import io.reactiverse.pgclient.Tuple;
-import io.reactiverse.pgclient.impl.ArrayTuple;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.ArrayTuple;
 import org.jooq.Configuration;
 import org.jooq.Param;
 import org.jooq.Query;
@@ -50,8 +50,9 @@ public abstract class AbstractReactiveQueryExecutor extends AbstractQueryExecuto
         }
     }
 
+
     protected String toPreparedQuery(Query query){
-        String namedQuery = query.getSQL(ParamType.NAMED);
+        String namedQuery = query.getSQL(ParamType.INDEXED);
         return namedQuery.replaceAll(pattern, "\\$");
     }
 }
