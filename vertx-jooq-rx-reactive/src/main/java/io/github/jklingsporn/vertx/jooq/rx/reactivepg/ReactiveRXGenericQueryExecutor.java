@@ -6,12 +6,12 @@ import io.github.jklingsporn.vertx.jooq.shared.reactive.AbstractReactiveQueryExe
 import io.github.jklingsporn.vertx.jooq.shared.reactive.ReactiveQueryExecutor;
 import io.github.jklingsporn.vertx.jooq.shared.reactive.ReactiveQueryResult;
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
-import io.vertx.reactivex.impl.AsyncResultCompletable;
 import io.vertx.reactivex.impl.AsyncResultSingle;
 import io.vertx.reactivex.sqlclient.Row;
+import io.vertx.reactivex.sqlclient.Transaction;
 import io.vertx.reactivex.sqlclient.*;
-import io.vertx.sqlclient.Transaction;
 import org.jooq.*;
 import org.jooq.conf.ParamType;
 import org.jooq.exception.TooManyRowsException;
@@ -29,9 +29,9 @@ import java.util.stream.StreamSupport;
 public class ReactiveRXGenericQueryExecutor extends AbstractReactiveQueryExecutor implements
         ReactiveQueryExecutor<Single<List<Row>>, Single<Optional<Row>>, Single<Integer>>, RXQueryExecutor {
 
-    protected final Pool delegate;
+    protected final SqlClient delegate;
 
-    public ReactiveRXGenericQueryExecutor(Configuration configuration, Pool delegate) {
+    public ReactiveRXGenericQueryExecutor(Configuration configuration, SqlClient delegate) {
         super(configuration);
         this.delegate = delegate;
     }
@@ -46,10 +46,6 @@ public class ReactiveRXGenericQueryExecutor extends AbstractReactiveQueryExecuto
                 StreamSupport
                         .stream(res.spliterator(), false)
                         .collect(Collectors.toList()));
-    }
-
-    protected Single<SqlConnection> getConnection() {
-        return delegate.rxGetConnection();
     }
 
     protected <U> io.reactivex.functions.Function<io.vertx.reactivex.ext.sql.SQLConnection,
@@ -115,19 +111,16 @@ public class ReactiveRXGenericQueryExecutor extends AbstractReactiveQueryExecuto
         return rowSingle.map(res -> new ReactiveQueryResult(res.getDelegate()));
     }
 
-    /**
-     * @return an instance of a <code>ReactiveRXGenericQueryExecutor</code> that performs all CRUD
-     * functions in the scope of a transaction. The transaction has to be committed/rolled back by calling <code>commit</code>
-     * or <code>rollback</code> on the QueryExecutor returned.
-     */
-//    public Single<? extends ReactiveRXGenericQueryExecutor> beginTransaction() {
-//        if (delegate instanceof Transaction) {
-//            throw new IllegalStateException("Already in transaction");
-//        }
-//        return AsyncResultSingle.toSingle(handler -> {
-//           delegate.getConnection();
-//        });
-//    }
+    public Single<? extends ReactiveRXGenericQueryExecutor> beginTransaction() {
+        if (delegate instanceof Transaction) {
+            throw new IllegalStateException("Already in transaction");
+        }
+        return ((Pool) delegate).rxBegin().map(newInstance());
+    }
+
+    protected io.reactivex.functions.Function<Transaction, ? extends ReactiveRXGenericQueryExecutor> newInstance() {
+        return transaction -> new ReactiveRXGenericQueryExecutor(configuration(), transaction);
+    }
 
     /**
      * Commits a transaction.
@@ -139,9 +132,7 @@ public class ReactiveRXGenericQueryExecutor extends AbstractReactiveQueryExecuto
         if (!(delegate instanceof Transaction)) {
             throw new IllegalStateException("Not in transaction");
         }
-        return AsyncResultCompletable.toCompletable(handler -> {
-            ((Transaction) delegate).commit(handler);
-        });
+        return ((Transaction) delegate).rxCommit();
     }
 
     /**
@@ -151,12 +142,10 @@ public class ReactiveRXGenericQueryExecutor extends AbstractReactiveQueryExecuto
      * @throws IllegalStateException if not called <code>beginTransaction</code> before.
      */
     public Completable rollback() {
-        if (!(delegate instanceof io.vertx.sqlclient.Transaction)) {
+        if (!(delegate instanceof Transaction)) {
             throw new IllegalStateException("Not in transaction");
         }
-        return AsyncResultCompletable.toCompletable(handler -> {
-            ((Transaction) delegate).rollback(handler);
-        });
+        return ((Transaction) delegate).rxRollback();
     }
 
     /**
@@ -179,12 +168,12 @@ public class ReactiveRXGenericQueryExecutor extends AbstractReactiveQueryExecuto
      * @param <U>         the return type.
      * @return the result of the transaction.
      */
-//    public <U> Maybe<U> transaction(io.reactivex.functions.Function<ReactiveRXGenericQueryExecutor, Maybe<U>> transaction) {
-//        return beginTransaction()
-//                .toMaybe()
-//                .flatMap(queryExecutor -> transaction.apply(queryExecutor) //perform user tasks
-//                        .flatMap(res -> queryExecutor.commit() //commit the transaction
-//                                .andThen(Maybe.just(res)))) //and return the result
-//                ;
-//    }
+    public <U> Maybe<U> transaction(io.reactivex.functions.Function<ReactiveRXGenericQueryExecutor, Maybe<U>> transaction) {
+        return beginTransaction()
+                .toMaybe()
+                .flatMap(queryExecutor -> transaction.apply(queryExecutor) //perform user tasks
+                        .flatMap(res -> queryExecutor.commit() //commit the transaction
+                                .andThen(Maybe.just(res)))) //and return the result
+                ;
+    }
 }

@@ -2,9 +2,10 @@ package io.github.jklingsporn.vertx.jooq.rx.reactivepg;
 
 import io.github.jklingsporn.vertx.jooq.shared.internal.QueryExecutor;
 import io.reactivex.Single;
-import io.vertx.reactivex.sqlclient.Pool;
 import io.vertx.reactivex.sqlclient.Row;
 import io.vertx.reactivex.sqlclient.RowSet;
+import io.vertx.reactivex.sqlclient.SqlClient;
+import io.vertx.reactivex.sqlclient.Transaction;
 import org.jooq.*;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public class ReactiveRXQueryExecutor<R extends UpdatableRecord<R>, P, T> extends
 
     private final Function<Row, P> pojoMapper;
 
-    public ReactiveRXQueryExecutor(Configuration configuration, Pool delegate,
+    public ReactiveRXQueryExecutor(Configuration configuration, SqlClient delegate,
                                    Function<Row, P> pojoMapper) {
         super(configuration, delegate);
         this.pojoMapper = pojoMapper;
@@ -49,14 +50,14 @@ public class ReactiveRXQueryExecutor<R extends UpdatableRecord<R>, P, T> extends
     }
 
 
-//    @Override
-//    protected io.reactivex.functions.Function<Transaction, ? extends ReactiveRXGenericQueryExecutor> newInstance() {
-//        return transaction-> new ReactiveRXQueryExecutor<R,P,T>(configuration(),transaction,pojoMapper);
-//    }
-//
-//    @Override
-//    @SuppressWarnings("unchecked")
-//    public Single<ReactiveRXQueryExecutor<R,P,T>> beginTransaction() {
-//        return (Single<ReactiveRXQueryExecutor<R,P,T>>) super.beginTransaction();
-//    }
+    @Override
+    protected io.reactivex.functions.Function<Transaction, ? extends ReactiveRXGenericQueryExecutor> newInstance() {
+        return transaction -> new ReactiveRXQueryExecutor<R, P, T>(configuration(), transaction, pojoMapper);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Single<ReactiveRXQueryExecutor<R, P, T>> beginTransaction() {
+        return (Single<ReactiveRXQueryExecutor<R, P, T>>) super.beginTransaction();
+    }
 }
