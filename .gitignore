@@ -3,3 +3,9 @@
 *.iws
 .vertx/
 target/
+**/generate/
+**/generated/
+.settings
+.classpath
+.project
+.factorypath
