@@ -1,10 +1,10 @@
 package io.github.jklingsporn.vertx.jooq.shared.reactive;
 
 import io.github.jklingsporn.vertx.jooq.shared.internal.AbstractQueryExecutor;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.ArrayTuple;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jooq.Configuration;
 import org.jooq.Param;
 import org.jooq.Query;
@@ -15,7 +15,7 @@ import org.jooq.conf.ParamType;
  */
 public abstract class AbstractReactiveQueryExecutor extends AbstractQueryExecutor {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractReactiveQueryExecutor.class);
+    private static final Logger logger = LogManager.getLogger(AbstractReactiveQueryExecutor.class);
     /**
      * Replace ':' but not '::'
      */

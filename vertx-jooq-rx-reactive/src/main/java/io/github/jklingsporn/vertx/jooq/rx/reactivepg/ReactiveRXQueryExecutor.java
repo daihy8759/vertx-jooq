@@ -6,7 +6,6 @@ import io.vertx.reactivex.sqlclient.Pool;
 import io.vertx.reactivex.sqlclient.Row;
 import io.vertx.reactivex.sqlclient.RowSet;
 import org.jooq.*;
-import org.jooq.impl.DefaultConfiguration;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,10 +20,6 @@ public class ReactiveRXQueryExecutor<R extends UpdatableRecord<R>, P, T> extends
         Single<Optional<P>>, Single<Integer>, Single<T>> {
 
     private final Function<Row, P> pojoMapper;
-
-    public ReactiveRXQueryExecutor(Pool delegate, Function<Row, P> pojoMapper) {
-        this(new DefaultConfiguration().set(SQLDialect.POSTGRES), delegate, pojoMapper);
-    }
 
     public ReactiveRXQueryExecutor(Configuration configuration, Pool delegate,
                                    Function<Row, P> pojoMapper) {
