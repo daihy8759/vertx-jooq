@@ -10,11 +10,11 @@ public interface VertxPojo {
      * @param json
      * @return a reference to this <code>VertxPOJO</code>
      */
-    public VertxPojo fromJson(io.vertx.core.json.JsonObject json);
+    VertxPojo fromJson(io.vertx.core.json.JsonObject json);
 
     /**
      * Converts this <code>VertxPOJO</code> into a <code>JsonObject</code>.
      * @return a JSON-representation of this POJO.
      */
-    public io.vertx.core.json.JsonObject toJson();
+    io.vertx.core.json.JsonObject toJson();
 }

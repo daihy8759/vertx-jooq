@@ -42,15 +42,17 @@ public class ObjectToJsonArrayBinding implements Binding<Object, JsonArray> {
         return CONVERTER;
     }
 
-    // Rending a bind variable for the binding context's value and casting it to the json type
+    // Rending a bind variable for the binding context's value and casting it to the
+    // json type
     @Override
     public void sql(BindingSQLContext<JsonArray> ctx) {
-        // Depending on how you generate your SQL, you may need to explicitly distinguish
-        // between jOOQ generating bind variables or inlined literals. If so, use this check:
+        // Depending on how you generate your SQL, you may need to explicitly
+        // distinguish
+        // between jOOQ generating bind variables or inlined literals. If so, use this
+        // check:
         // ctx.render().paramType() == INLINED
         RenderContext context = ctx.render().visit(DSL.val(ctx.convert(converter()).value()));
-        if (SQLDialect.POSTGRES.equals(ctx.configuration().dialect().family()))
-        {
+        if (SQLDialect.POSTGRES.equals(ctx.configuration().dialect().family())) {
             context.sql("::json");
         }
     }
@@ -61,19 +63,22 @@ public class ObjectToJsonArrayBinding implements Binding<Object, JsonArray> {
         ctx.statement().registerOutParameter(ctx.index(), Types.VARCHAR);
     }
 
-    // Converting the JsonArray to a String value and setting that on a JDBC PreparedStatement
+    // Converting the JsonArray to a String value and setting that on a JDBC
+    // PreparedStatement
     @Override
     public void set(BindingSetStatementContext<JsonArray> ctx) throws SQLException {
         ctx.statement().setString(ctx.index(), Objects.toString(ctx.convert(converter()).value(), null));
     }
 
-    // Getting a String value from a JDBC ResultSet and converting that to a JsonArray
+    // Getting a String value from a JDBC ResultSet and converting that to a
+    // JsonArray
     @Override
     public void get(BindingGetResultSetContext<JsonArray> ctx) throws SQLException {
         ctx.convert(converter()).value(ctx.resultSet().getString(ctx.index()));
     }
 
-    // Getting a String value from a JDBC CallableStatement and converting that to a JsonArray
+    // Getting a String value from a JDBC CallableStatement and converting that to a
+    // JsonArray
     @Override
     public void get(BindingGetStatementContext<JsonArray> ctx) throws SQLException {
         ctx.convert(converter()).value(ctx.statement().getString(ctx.index()));
